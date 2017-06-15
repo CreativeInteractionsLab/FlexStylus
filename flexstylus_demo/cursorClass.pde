@@ -9,7 +9,9 @@ class cursorX
   void drawShape()
   {
     //mouse/pen cursor
+
     ellipseMode(CENTER);
+    fill(255,255,255);
     noStroke();
     ellipse(mouseX, mouseY, 20, 20);
     

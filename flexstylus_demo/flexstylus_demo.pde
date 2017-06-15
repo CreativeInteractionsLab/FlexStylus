@@ -1,3 +1,4 @@
+//http://www.helixsoft.nl/articles/circle/sincos.htm
 //Serial Comms
 import processing.serial.*;
 Serial myPort;
@@ -6,9 +7,12 @@ int serialCount;
 boolean firstContact = false;
 int portNum = 0; // may need to change depending on which port you're using
 
-//Circle
+//Cursor
 float xpos, ypos;
 cursorX flexCursor;
+
+//Menu items
+menuItem menuItem01;
 
 //Bend Movement
 int increaseMagnitudeX = 1;
@@ -28,14 +32,16 @@ void setup()
   increaseMagnitudeY = height/255;
   
   flexCursor = new cursorX();
+  menuItem01 = new menuItem();
 }
 
 void draw()
 {
   background(255, 204, 0);
   flexCursor.moveShape(xpos, ypos);
-  flexCursor.drawShape();
 
+  menuItem01.drawShape(100,100);
+  flexCursor.drawShape();
  
   //ellipse(xpos + width/2, ypos + height/2, 20, 20);
 }

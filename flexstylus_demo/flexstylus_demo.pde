@@ -13,6 +13,13 @@ cursorX flexCursor;
 
 //Menu items
 menuItem menuItem01;
+float[] menuItemPosX = new float[8];
+float[] menuItemPosY = new float[8];
+float radius = 100;
+float angle = 0;
+float angle_stepsize = 0.785;
+float centerScreenX;
+float centerScreenY;
 
 //Bend Movement
 int increaseMagnitudeX = 1;
@@ -22,8 +29,8 @@ void setup()
 {
   size(1024,1024);
   
-  String portName = Serial.list()[portNum];
-  myPort = new Serial(this, portName, 9600);
+  //String portName = Serial.list()[portNum];
+ // myPort = new Serial(this, portName, 9600);
   
   xpos = width/2;
   ypos = height/2;
@@ -32,7 +39,24 @@ void setup()
   increaseMagnitudeY = height/255;
   
   flexCursor = new cursorX();
+  
+  //menu item setup
   menuItem01 = new menuItem();
+  centerScreenX = width/2;
+  centerScreenY = height/2;
+  
+  for (int i = 0; i == menuItemPosX.length; i++)
+  {
+    
+      menuItemPosX[i] = radius * cos(angle);
+      menuItemPosY[i] = radius * sin(angle);
+      angle += angle_stepsize;
+    
+    ellipseMode(CENTER);
+    ellipse(menuItemPosX[i], menuItemPosY[i], 50, 50);
+  }
+  println(menuItemPosX.length);
+
 }
 
 void draw()
@@ -42,6 +66,19 @@ void draw()
 
   menuItem01.drawShape(100,100);
   flexCursor.drawShape();
+  
+    for (int i = 0; i < menuItemPosX.length; i++)
+  {
+    if(angle < 2*PI)
+    {
+      menuItemPosX[i] = radius * cos(angle) + centerScreenX;
+      menuItemPosY[i] = radius * sin(angle) + centerScreenY;
+      angle += angle_stepsize;
+    }
+    ellipseMode(CENTER);
+    fill(0,0,0);
+    ellipse(menuItemPosX[i], menuItemPosY[i], 10, 10);
+  }
  
   //ellipse(xpos + width/2, ypos + height/2, 20, 20);
 }

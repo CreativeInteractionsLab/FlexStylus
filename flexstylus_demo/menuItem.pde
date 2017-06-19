@@ -1,19 +1,29 @@
 class menuItem
 {
+  float posX;
+  float posY;
+  float sizeX;
+  float sizeY;
+  
   menuItem()
   {
-    int posX = 20;
-    int posY = 20;
-    
+    posX = 20;
+    posY = 20;
+    sizeX = 50;
+    sizeY = 50;
   }
   
-  void drawShape(int posX, int posY)
+  void update(float posXTemp, float posYTemp, float sizeXTemp, float sizeYTemp)
   {
-
+    posX = posXTemp;
+    posY = posYTemp;
+    
+  }
+  void drawShape()
+  {
     ellipseMode(CENTER);
     noStroke();
-    fill(255,0,0);
-    ellipse(posX, posY, 50, 50);
-
+    fill(0,0,0);
+    ellipse(posX, posY, sizeX, sizeY);
   }
 }

@@ -12,10 +12,11 @@ float xpos, ypos;
 cursorX flexCursor;
 
 //Menu items
-menuItem menuItem01;
+menuItem[] menuItems;
 float[] menuItemPosX = new float[8];
 float[] menuItemPosY = new float[8];
-float radius = 100;
+float radius = 250;
+float dist = 50;
 float angle = 0;
 float angle_stepsize = 0.785;
 float centerScreenX;
@@ -29,8 +30,8 @@ void setup()
 {
   size(1024,1024);
   
-  //String portName = Serial.list()[portNum];
- // myPort = new Serial(this, portName, 9600);
+  String portName = Serial.list()[portNum];
+  myPort = new Serial(this, portName, 9600);
   
   xpos = width/2;
   ypos = height/2;
@@ -41,45 +42,45 @@ void setup()
   flexCursor = new cursorX();
   
   //menu item setup
-  menuItem01 = new menuItem();
+  menuItems = new menuItem[8];
   centerScreenX = width/2;
   centerScreenY = height/2;
   
   for (int i = 0; i == menuItemPosX.length; i++)
   {
-    
       menuItemPosX[i] = radius * cos(angle);
       menuItemPosY[i] = radius * sin(angle);
-      angle += angle_stepsize;
-    
+      angle += angle_stepsize;    
     ellipseMode(CENTER);
     ellipse(menuItemPosX[i], menuItemPosY[i], 50, 50);
   }
-  println(menuItemPosX.length);
-
+  
+  for (int j = 0; j <= 7; j++)
+  {
+    menuItems[j] = new menuItem();
+  }
 }
 
 void draw()
 {
-  background(255, 204, 0);
+  background(255, 255, 255);
   flexCursor.moveShape(xpos, ypos);
 
-  menuItem01.drawShape(100,100);
   flexCursor.drawShape();
   
-    for (int i = 0; i < menuItemPosX.length; i++)
+  for (int k = 0; k < menuItemPosX.length; k++)
   {
     if(angle < 2*PI)
     {
-      menuItemPosX[i] = radius * cos(angle) + centerScreenX;
-      menuItemPosY[i] = radius * sin(angle) + centerScreenY;
+      menuItemPosX[k] = radius * cos(angle) + centerScreenX;
+      menuItemPosY[k] = radius * sin(angle) + centerScreenY;
       angle += angle_stepsize;
     }
-    ellipseMode(CENTER);
-    fill(0,0,0);
-    ellipse(menuItemPosX[i], menuItemPosY[i], 10, 10);
+    
+    menuItems[k].update(menuItemPosX[k], menuItemPosY[k], 50, 50);
+    menuItems[k].drawShape();
   }
- 
+  
   //ellipse(xpos + width/2, ypos + height/2, 20, 20);
 }
 
@@ -103,7 +104,6 @@ void serialEvent(Serial myPort)
     {
       xpos = increaseMagnitudeX * ((serialInArray[0]) - (255/2));
       ypos = increaseMagnitudeY * ((serialInArray[1]) - (255/2));
-      println(xpos + "\t" + ypos);
       myPort.write('A');
       serialCount = 0;
     }

@@ -11,7 +11,7 @@ class cursorX
     //mouse/pen cursor
 
     ellipseMode(CENTER);
-    fill(255,255,255);
+    fill(255,255,0);
     noStroke();
     ellipse(mouseX, mouseY, 20, 20);
     

@@ -15,12 +15,14 @@ cursorX flexCursor;
 menuItem[] menuItems;
 float[] menuItemPosX = new float[8];
 float[] menuItemPosY = new float[8];
-float radius = 250;
+float radius;
 float dist = 50;
 float angle = 0;
 float angle_stepsize = 0.785;
 float centerScreenX;
 float centerScreenY;
+float defaultMenuItemSizeX;
+float defaultMenuItemSizeY;
 
 //Bend Movement
 int increaseMagnitudeX = 1;
@@ -45,12 +47,25 @@ void setup()
   menuItems = new menuItem[8];
   centerScreenX = width/2;
   centerScreenY = height/2;
+
+  if (width <= height)
+  {
+    defaultMenuItemSizeX = width/10;
+    defaultMenuItemSizeY = width/10;
+    radius = width / 5;
+  }
+  else if (width > height)
+  {
+    defaultMenuItemSizeX = height/10;
+    defaultMenuItemSizeY = height/10;
+    radius = height / 5;
+  }
   
   for (int i = 0; i == menuItemPosX.length; i++)
   {
-      menuItemPosX[i] = radius * cos(angle);
-      menuItemPosY[i] = radius * sin(angle);
-      angle += angle_stepsize;    
+    menuItemPosX[i] = radius * cos(angle);
+    menuItemPosY[i] = radius * sin(angle);
+    angle += angle_stepsize;    
     ellipseMode(CENTER);
     ellipse(menuItemPosX[i], menuItemPosY[i], 50, 50);
   }
@@ -64,9 +79,6 @@ void setup()
 void draw()
 {
   background(255, 255, 255);
-  flexCursor.moveShape(xpos, ypos);
-
-  flexCursor.drawShape();
   
   for (int k = 0; k < menuItemPosX.length; k++)
   {
@@ -77,11 +89,53 @@ void draw()
       angle += angle_stepsize;
     }
     
-    menuItems[k].update(menuItemPosX[k], menuItemPosY[k], 50, 50);
-    menuItems[k].drawShape();
+    if(overMenuItem(menuItemPosX[k], menuItemPosY[k], defaultMenuItemSizeX))
+    {
+      menuItems[k].update(menuItemPosX[k], menuItemPosY[k], defaultMenuItemSizeX+50, defaultMenuItemSizeY+50);
+      menuItems[k].drawShape();
+      menuItems[k].isOverlapping = true;
+    }
+    else if(!(overMenuItem(menuItemPosX[k], menuItemPosY[k], defaultMenuItemSizeX)))
+    {
+      menuItems[k].update(menuItemPosX[k], menuItemPosY[k], defaultMenuItemSizeX, defaultMenuItemSizeY);
+      menuItems[k].drawShape();
+      menuItems[k].isOverlapping = false;
+    }
   }
   
-  //ellipse(xpos + width/2, ypos + height/2, 20, 20);
+  flexCursor.moveShape(xpos, ypos);
+  flexCursor.drawShape();
+}
+
+void mousePressed()
+{
+  for (int i = 0; i < menuItemPosX.length; i++)
+  {
+    if(menuItems[i].isOverlapping == true)
+    {
+      menuItems[i].isActive = true;
+      println("ha");
+    }
+    else if(menuItems[i].isOverlapping == false)
+    {
+      menuItems[i].isActive = false;
+    }
+  }
+}
+
+boolean overMenuItem(float tempMenuItemX, float tempMenuItemY, float tempDiameter)
+{
+  float distX = tempMenuItemX - mouseX;
+  float distY = tempMenuItemY - mouseY;
+  
+  if(sqrt(sq(distX) + sq(distY)) < tempDiameter/2)
+  {
+    return true;
+  }
+  else
+  {
+   return false; 
+  }
 }
 
 void serialEvent(Serial myPort)

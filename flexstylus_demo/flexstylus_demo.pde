@@ -72,7 +72,7 @@ void setup()
   
   for (int j = 0; j <= 7; j++)
   {
-    menuItems[j] = new menuItem();
+    menuItems[j] = new menuItem(j);
   }
 }
 
@@ -84,8 +84,8 @@ void draw()
   {
     if(angle < 2*PI)
     {
-      menuItemPosX[k] = radius * cos(angle) + centerScreenX;
-      menuItemPosY[k] = radius * sin(angle) + centerScreenY;
+      menuItemPosX[k] = radius * cos(angle-1.57) + centerScreenX;
+      menuItemPosY[k] = radius * sin(angle-1.57) + centerScreenY;
       angle += angle_stepsize;
     }
     
@@ -114,7 +114,6 @@ void mousePressed()
     if(menuItems[i].isOverlapping == true)
     {
       menuItems[i].isActive = true;
-      println("ha");
     }
     else if(menuItems[i].isOverlapping == false)
     {

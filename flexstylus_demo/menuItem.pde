@@ -1,5 +1,7 @@
 class menuItem
 {
+  PShape [] iconsArray;
+  PShape s;
   float posX;
   float posY;
   float sizeX;
@@ -7,12 +9,15 @@ class menuItem
   boolean isOverlapping;
   boolean isActive;
   float strokeWeight;
+  int arrayPosition;
   
-  menuItem()
+  menuItem(int tempArrayPosition)
   {
+    arrayPosition = tempArrayPosition;
     posX = width/2;
     posY = height/2;
     isOverlapping = false;
+    iconsArray = new PShape[8];
     
     if (width <= height)
     {
@@ -24,6 +29,12 @@ class menuItem
       sizeX = height/10;
       sizeY = height/10;
     }
+    
+    for (int i = 0; i <= 7; i++)
+    {
+      iconsArray[i] = loadShape(str(i + 1)+".svg");
+    }
+    s = iconsArray[arrayPosition];
 
   }
   
@@ -51,5 +62,13 @@ class menuItem
     strokeWeight(strokeWeight);
     fill(0,0,0);
     ellipse(posX, posY, sizeX, sizeY);
+    
+ 
+    s.enableStyle();
+    shapeMode(CENTER);
+    shape(s, posX, posY, sizeX, sizeY);
+    
+    println(iconsArray[1]);
+
   }
 }

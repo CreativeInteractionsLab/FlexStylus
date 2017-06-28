@@ -15,6 +15,7 @@ cursorX flexCursor;
 menuItem[] menuItems;
 float[] menuItemPosX = new float[8];
 float[] menuItemPosY = new float[8];
+int activeMenuItem;
 float radius;
 float dist = 50;
 float angle = 0;
@@ -34,25 +35,35 @@ int increaseMagnitudeX = 1;
 int increaseMagnitudeY = 1;
 
 //menuButton
+mainMenu mainRadialMenu;
 boolean menuPressed;
+int defaultMainMenuSize;
+boolean isOverlappingMainMenu;
 
 //timer for menu
 int m;
+
+//drawing
+boolean mouseHeld;
+float oldX;
+float oldY;
 
 void setup()
 {
   size(1024,1024);
   
-  String portName = Serial.list()[portNum];
-  myPort = new Serial(this, portName, 9600);
+  //String portName = Serial.list()[portNum];
+  //myPort = new Serial(this, portName, 9600);
   
+  //cursor setup
   xpos = width/2;
   ypos = height/2;
-  
   increaseMagnitudeX = width/255;
   increaseMagnitudeY = height/255;
-  
   flexCursor = new cursorX();
+  
+  //main menu setup
+  mainRadialMenu = new mainMenu();
   
   //menu item setup
   menuItems = new menuItem[8];
@@ -62,18 +73,21 @@ void setup()
   defaultMenuItemOpacity = 220;
   drawMenu = false;
   isOverlappingMenuItem = false;
+  activeMenuItem = 100;
   
   if (width <= height)
   {
     defaultMenuItemSizeX = width/10;
     defaultMenuItemSizeY = width/10;
     radius = width / 5;
+    defaultMainMenuSize = width/17;
   }
   else if (width > height)
   {
     defaultMenuItemSizeX = height/10;
     defaultMenuItemSizeY = height/10;
     radius = height / 5;
+    defaultMainMenuSize = height/17;
   }
   
   for (int i = 0; i == menuItemPosX.length; i++)
@@ -95,6 +109,7 @@ void draw()
 {
   background(255, 255, 255);
   
+  //Radial Menu
   if (drawMenu)
   {
     if (menuPressed)
@@ -137,9 +152,42 @@ void draw()
     }
   }
   
+  //Main Menu
+  if(overMenuItem(mainRadialMenu.posX, mainRadialMenu.posY, mainRadialMenu.sizeX))
+  {
+    mainRadialMenu.update(defaultMainMenuSize+10, defaultMainMenuSize+10, 255);
+    isOverlappingMainMenu = true;
+  }
+  else if(!overMenuItem(mainRadialMenu.posX, mainRadialMenu.posY, mainRadialMenu.sizeX))
+  {
+    mainRadialMenu.update(defaultMainMenuSize, defaultMainMenuSize, defaultMenuItemOpacity);
+    isOverlappingMainMenu = false;
+  }
+  
+  //execute action if mouse is held
+  if(mouseHeld && !isOverlappingMenuItem && !isOverlappingMainMenu)
+  {
+    switch(activeMenuItem)
+    {
+      case 0:
+      println("draw");
+      drawing();
+      break;
+      
+      case 1:
+      println("color");
+      break;
+    }
+  }
+  
+  
+  
   flexCursor.moveShape(xpos, ypos);
   flexCursor.drawShape();
   
+  mainRadialMenu.drawShape();
+  
+  /*
   fill(0,0,0);
   text("menu 0 act: " + str(menuItems[0].isActive), 20, 30);
   text("menu 0 ol: " + str(menuItems[0].isOverlapping), 20, 50);
@@ -147,41 +195,78 @@ void draw()
   text("menu 1 ol: " + str(menuItems[1].isOverlapping), 20, 90);
   text("num no ol: " + str(numMenuItems_noOverlap), 20, 110);
   text("isOverlappingMenuItem: " + str(isOverlappingMenuItem), 20, 130);
+  */
+  
+
 }
 
 void mousePressed()
 {
-  for (int i = 0; i < menuItemPosX.length; i++)
+  mouseHeld = true;
+  //if clicking radial menu item
+  if (drawMenu && menuPressed)
   {
-    numMenuItems_noOverlap = 0;
-    //checks if overlapping at least 1 menu item
-    for (int k = 0; k < menuItemPosX.length; k++)
+    for (int i = 0; i < menuItemPosX.length; i++)
     {
-      if (menuItems[k].isOverlapping == true)  
+      numMenuItems_noOverlap = 0;
+      //checks if overlapping at least 1 menu item
+      for (int k = 0; k < menuItemPosX.length; k++)
       {
-        isOverlappingMenuItem = true;
-      }
-      else if (menuItems[k].isOverlapping == false)
-      {
-        numMenuItems_noOverlap++;
-        if (numMenuItems_noOverlap == menuItemPosX.length)
+        if (menuItems[k].isOverlapping == true)  
         {
-          isOverlappingMenuItem = false;
+          isOverlappingMenuItem = true;
         }
-      }
-    }  
-    if(isOverlappingMenuItem)
-    {
-      if(menuItems[i].isOverlapping == true)
+        else if (menuItems[k].isOverlapping == false)
+        {
+          numMenuItems_noOverlap++;
+          if (numMenuItems_noOverlap == menuItemPosX.length)
+          {
+            isOverlappingMenuItem = false;
+            
+            //closes menu if misclick
+            menuPressed = false;
+            mainRadialMenu.isActive = false;
+            m = millis();
+          }
+        }
+      }  
+      if(isOverlappingMenuItem)
       {
-        menuItems[i].isActive = true;
-      }
-      else if(menuItems[i].isOverlapping == false)
-      {
-        menuItems[i].isActive = false;
+        if(menuItems[i].isOverlapping == true)
+        {
+          menuItems[i].isActive = true;
+          activeMenuItem = i;
+        }
+        else if(menuItems[i].isOverlapping == false)
+        {
+          menuItems[i].isActive = false;
+        }
       }
     }
   }
+  
+  //if clicking main menu
+  if (isOverlappingMainMenu)
+  {
+    if(drawMenu)
+    {
+      menuPressed = false;
+      m = millis();
+      mainRadialMenu.isActive = false;
+    }
+    else if(!drawMenu)
+    {
+      menuPressed = true;
+      drawMenu = true;
+      mainRadialMenu.isActive = true;
+    }
+  }
+
+}
+
+void mouseReleased()
+{
+  mouseHeld = false; 
 }
 
 void keyPressed()
@@ -195,10 +280,24 @@ void keyPressed()
     }
     else if(menuPressed)
     {
+      //closes menu
       menuPressed = false;
       m = millis();
     }
   }
+  else if(key == '2')
+  {
+    background(255);
+  }
+}
+
+void drawing()
+{
+  stroke(0);
+  strokeWeight(7);
+  line(mouseX, mouseY, oldX, oldY);
+  oldX=mouseX;
+  oldY=mouseY;
 }
 
 boolean overMenuItem(float tempMenuItemX, float tempMenuItemY, float tempDiameter)

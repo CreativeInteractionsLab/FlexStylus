@@ -47,10 +47,14 @@ int m;
 boolean mouseHeld;
 float oldX;
 float oldY;
+PGraphics buffer;
+float strokeWeight;
+color strokeColor;
 
 void setup()
 {
   size(1024,1024);
+  buffer = createGraphics(1024,1024);
   
   //String portName = Serial.list()[portNum];
   //myPort = new Serial(this, portName, 9600);
@@ -103,11 +107,24 @@ void setup()
   {
     menuItems[j] = new menuItem(j);
   }
+  
+  //drawing setup
+  strokeWeight = 5;
+  strokeColor = color(0,0,0);
 }
 
 void draw()
 {
   background(255, 255, 255);
+  image(buffer,0,0);
+  
+  if(activeMenuItem == 1)
+  {
+    PShape cW = loadShape("colorWheel.svg");
+    cW.enableStyle();
+    shapeMode(CENTER);
+    shape(cW, 500, 500, 350, 350);
+  }
   
   //Radial Menu
   if (drawMenu)
@@ -170,12 +187,29 @@ void draw()
     switch(activeMenuItem)
     {
       case 0:
-      println("draw");
       drawing();
       break;
       
       case 1:
-      println("color");
+      sampling();
+      break;
+      
+      case 2:
+      break;
+      
+      case 3:
+      break;
+      
+      case 4:
+      break;
+      
+      case 5:
+      break;
+      
+      case 6:
+      break;
+      
+      case 7:
       break;
     }
   }
@@ -184,6 +218,8 @@ void draw()
   
   flexCursor.moveShape(xpos, ypos);
   flexCursor.drawShape();
+  
+  
   
   mainRadialMenu.drawShape();
   
@@ -202,6 +238,8 @@ void draw()
 
 void mousePressed()
 {
+  oldX=mouseX;
+  oldY=mouseY;
   mouseHeld = true;
   //if clicking radial menu item
   if (drawMenu && menuPressed)
@@ -236,6 +274,17 @@ void mousePressed()
         {
           menuItems[i].isActive = true;
           activeMenuItem = i;
+          
+          //single click menu items/actions go here
+          if(i == 4)
+          {
+           buffer.clear();
+           buffer.endDraw();
+          }
+          else if(i == 6)
+          {
+            buffer.save("art.png"); 
+          }
         }
         else if(menuItems[i].isOverlapping == false)
         {
@@ -266,38 +315,38 @@ void mousePressed()
 
 void mouseReleased()
 {
-  mouseHeld = false; 
+  mouseHeld = false;
 }
 
 void keyPressed()
 {
   if(key == '1')
   {
-    if(!menuPressed)
-    {
-      drawMenu = true;
-      menuPressed = true;
-    }
-    else if(menuPressed)
-    {
-      //closes menu
-      menuPressed = false;
-      m = millis();
-    }
+    strokeWeight++;
   }
   else if(key == '2')
   {
-    background(255);
+    if(strokeWeight >=1)
+    {
+      strokeWeight--;
+    }
   }
 }
 
 void drawing()
 {
-  stroke(0);
-  strokeWeight(7);
-  line(mouseX, mouseY, oldX, oldY);
+  buffer.beginDraw();
+  buffer.stroke(strokeColor);
+  buffer.strokeWeight(strokeWeight);
+  buffer.line(mouseX, mouseY, oldX, oldY);
   oldX=mouseX;
   oldY=mouseY;
+  buffer.endDraw();
+}
+
+void sampling()
+{
+  strokeColor = color(get(mouseX, mouseY));
 }
 
 boolean overMenuItem(float tempMenuItemX, float tempMenuItemY, float tempDiameter)

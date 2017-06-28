@@ -17,7 +17,7 @@ class cursorX
     
     //flex cursor
     noStroke();
-    ellipse(x1, y1, 20, 20);
+    //ellipse(x1, y1, 20, 20);
   }
   void moveShape(float posX, float posY)
   {

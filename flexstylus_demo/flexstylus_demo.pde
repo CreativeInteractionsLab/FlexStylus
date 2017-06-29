@@ -51,6 +51,9 @@ PGraphics buffer;
 float strokeWeight;
 color strokeColor;
 
+//erasing
+color eraserColor;
+
 void setup()
 {
   size(1024,1024);
@@ -111,6 +114,9 @@ void setup()
   //drawing setup
   strokeWeight = 5;
   strokeColor = color(0,0,0);
+  
+  //eraser setup
+  eraserColor = color(0,0);
 }
 
 void draw()
@@ -123,8 +129,11 @@ void draw()
     PShape cW = loadShape("colorWheel.svg");
     cW.enableStyle();
     shapeMode(CENTER);
-    shape(cW, 500, 500, 350, 350);
+    shape(cW, width/2, height/2, 350, 350);
   }
+  
+  fill(strokeColor);
+  ellipse(50,200,50,50);
   
   //Radial Menu
   if (drawMenu)
@@ -162,7 +171,7 @@ void draw()
         menuItems[k].drawShape();
       }
       
-      if(millis() >= m+300)
+      if(millis() >= m+200)
       {
          drawMenu = false;
       }
@@ -184,6 +193,7 @@ void draw()
   //execute action if mouse is held
   if(mouseHeld && !isOverlappingMenuItem && !isOverlappingMainMenu)
   {
+    println("here");
     switch(activeMenuItem)
     {
       case 0:
@@ -192,12 +202,14 @@ void draw()
       
       case 1:
       sampling();
+      println("ok");
       break;
       
       case 2:
       break;
       
       case 3:
+      erasing();
       break;
       
       case 4:
@@ -214,24 +226,10 @@ void draw()
     }
   }
   
-  
-  
   flexCursor.moveShape(xpos, ypos);
   flexCursor.drawShape();
   
-  
-  
   mainRadialMenu.drawShape();
-  
-  /*
-  fill(0,0,0);
-  text("menu 0 act: " + str(menuItems[0].isActive), 20, 30);
-  text("menu 0 ol: " + str(menuItems[0].isOverlapping), 20, 50);
-  text("menu 1 act: " + str(menuItems[1].isActive), 20, 70);
-  text("menu 1 ol: " + str(menuItems[1].isOverlapping), 20, 90);
-  text("num no ol: " + str(numMenuItems_noOverlap), 20, 110);
-  text("isOverlappingMenuItem: " + str(isOverlappingMenuItem), 20, 130);
-  */
   
 
 }
@@ -262,9 +260,7 @@ void mousePressed()
             isOverlappingMenuItem = false;
             
             //closes menu if misclick
-            menuPressed = false;
-            mainRadialMenu.isActive = false;
-            m = millis();
+            closeMenu();
           }
         }
       }  
@@ -276,14 +272,22 @@ void mousePressed()
           activeMenuItem = i;
           
           //single click menu items/actions go here
-          if(i == 4)
+          if (i == 1)
           {
+            closeMenu();
+            flexCursor.mode = 1;
+            isOverlappingMenuItem = false;
+            isOverlappingMainMenu = false;
+          }
+          else if(i == 4)
+          {
+           buffer.beginDraw();
            buffer.clear();
            buffer.endDraw();
           }
           else if(i == 6)
           {
-            buffer.save("art.png"); 
+           buffer.save("art.png"); 
           }
         }
         else if(menuItems[i].isOverlapping == false)
@@ -299,15 +303,11 @@ void mousePressed()
   {
     if(drawMenu)
     {
-      menuPressed = false;
-      m = millis();
-      mainRadialMenu.isActive = false;
+      closeMenu();
     }
     else if(!drawMenu)
     {
-      menuPressed = true;
-      drawMenu = true;
-      mainRadialMenu.isActive = true;
+      openMenu();
     }
   }
 
@@ -349,6 +349,38 @@ void sampling()
   strokeColor = color(get(mouseX, mouseY));
 }
 
+
+void erasing()
+{
+  buffer.beginDraw();
+  buffer.loadPixels();
+  for (int x=0; x<buffer.width; x++) {
+    for (int y=0; y<buffer.height; y++ ) {
+      float distance = dist(x,y,mouseX,mouseY);
+      if (distance <= strokeWeight/2) {
+        int loc = x + y*buffer.width;
+        buffer.pixels[loc] = eraserColor;
+      }
+    }
+  }
+  buffer.updatePixels();
+  buffer.endDraw();
+}
+
+void closeMenu()
+{
+  menuPressed = false;
+  m = millis();
+  mainRadialMenu.isActive = false; 
+}
+
+void openMenu()
+{
+  menuPressed = true;
+  drawMenu = true;
+  mainRadialMenu.isActive = true;
+}
+
 boolean overMenuItem(float tempMenuItemX, float tempMenuItemY, float tempDiameter)
 {
   float distX = tempMenuItemX - mouseX;
@@ -363,6 +395,7 @@ boolean overMenuItem(float tempMenuItemX, float tempMenuItemY, float tempDiamete
    return false; 
   }
 }
+
 
 void serialEvent(Serial myPort)
 {
@@ -388,4 +421,5 @@ void serialEvent(Serial myPort)
       serialCount = 0;
     }
   }
+  
 }

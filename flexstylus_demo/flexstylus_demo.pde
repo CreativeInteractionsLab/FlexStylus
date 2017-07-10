@@ -51,6 +51,9 @@ PGraphics buffer;
 float strokeWeight;
 color strokeColor;
 
+//color wheel
+colorWheel colorWheel;
+
 //erasing
 color eraserColor;
 
@@ -115,6 +118,9 @@ void setup()
   strokeWeight = 5;
   strokeColor = color(0,0,0);
   
+  //color wheel setup
+  colorWheel = new colorWheel();
+  
   //eraser setup
   eraserColor = color(0,0);
 }
@@ -123,17 +129,13 @@ void draw()
 {
   background(255, 255, 255);
   image(buffer,0,0);
-  
-  if(activeMenuItem == 1)
-  {
-    PShape cW = loadShape("colorWheel.svg");
-    cW.enableStyle();
-    shapeMode(CENTER);
-    shape(cW, width/2, height/2, 350, 350);
-  }
-  
   fill(strokeColor);
   ellipse(50,200,50,50);
+  
+  if (activeMenuItem == 1)
+  {
+    colorWheel.drawShape();
+  }
   
   //Radial Menu
   if (drawMenu)
@@ -171,9 +173,10 @@ void draw()
         menuItems[k].drawShape();
       }
       
-      if(millis() >= m+200)
+      if(millis() >= m+150)
       {
          drawMenu = false;
+         isOverlappingMenuItem = false;
       }
     }
   }
@@ -193,16 +196,16 @@ void draw()
   //execute action if mouse is held
   if(mouseHeld && !isOverlappingMenuItem && !isOverlappingMainMenu)
   {
-    println("here");
     switch(activeMenuItem)
     {
       case 0:
       drawing();
+      //println("0");
       break;
       
       case 1:
       sampling();
-      println("ok");
+      //println("1");
       break;
       
       case 2:
@@ -210,6 +213,7 @@ void draw()
       
       case 3:
       erasing();
+      //println("3");
       break;
       
       case 4:
@@ -272,6 +276,7 @@ void mousePressed()
           activeMenuItem = i;
           
           //single click menu items/actions go here
+          //colour sampling
           if (i == 1)
           {
             closeMenu();
@@ -279,12 +284,14 @@ void mousePressed()
             isOverlappingMenuItem = false;
             isOverlappingMainMenu = false;
           }
+          //erase all
           else if(i == 4)
           {
            buffer.beginDraw();
            buffer.clear();
            buffer.endDraw();
           }
+          //screenshot
           else if(i == 6)
           {
            buffer.save("art.png"); 
@@ -331,6 +338,11 @@ void keyPressed()
       strokeWeight--;
     }
   }
+  else if(key == '3')
+  {
+    println("mouseHeld: " + mouseHeld + " - " + "isOverlappingMainMenu: " + isOverlappingMainMenu + " - " + "isOverlappingMenuItem: " + isOverlappingMenuItem);
+    //isOverlappingMenuItem = false;
+  }
 }
 
 void drawing()
@@ -371,7 +383,8 @@ void closeMenu()
 {
   menuPressed = false;
   m = millis();
-  mainRadialMenu.isActive = false; 
+  mainRadialMenu.isActive = false;
+  isOverlappingMenuItem = false;
 }
 
 void openMenu()

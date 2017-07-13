@@ -1,4 +1,3 @@
-//http://www.helixsoft.nl/articles/circle/sincos.htm
 //Serial Comms
 import processing.serial.*;
 Serial myPort;
@@ -53,6 +52,9 @@ color strokeColor;
 
 //color wheel
 colorWheel colorWheel;
+float defaultCWSize;
+float defaultCWCheckSize;
+boolean isOverlappingCheck;
 
 //erasing
 color eraserColor;
@@ -120,6 +122,9 @@ void setup()
   
   //color wheel setup
   colorWheel = new colorWheel();
+  defaultCWSize = 350;
+  defaultCWCheckSize = 50;
+  isOverlappingCheck = false;
   
   //eraser setup
   eraserColor = color(0,0);
@@ -132,9 +137,22 @@ void draw()
   fill(strokeColor);
   ellipse(50,200,50,50);
   
+  //change cursor
+  flexCursor.mode = activeMenuItem;
+  
+  //color wheel transitions
   if (activeMenuItem == 1)
   {
-    colorWheel.drawShape();
+    if(colorWheel.isActive)
+    {
+      colorWheel.update(350,350, defaultCWCheckSize, defaultCWCheckSize);
+      colorWheel.drawShape();
+    }
+    else if(!colorWheel.isActive)
+    {
+      colorWheel.update(0,0, 0, 0);
+      colorWheel.drawShape();
+    }
   }
   
   //Radial Menu
@@ -193,6 +211,17 @@ void draw()
     isOverlappingMainMenu = false;
   }
   
+  //over check mark
+  if(overMenuItem(colorWheel.posCheckX, colorWheel.posCheckY, colorWheel.sizeCheckX) && activeMenuItem == 1)
+  {
+    isOverlappingCheck = true;
+    colorWheel.update(defaultCWSize, defaultCWSize, defaultCWCheckSize+25, defaultCWCheckSize+25);
+  }
+  else if(!overMenuItem(colorWheel.posCheckX, colorWheel.posCheckY, colorWheel.sizeCheckX))
+  {
+    isOverlappingCheck = false;
+  }
+  
   //execute action if mouse is held
   if(mouseHeld && !isOverlappingMenuItem && !isOverlappingMainMenu)
   {
@@ -235,7 +264,6 @@ void draw()
   
   mainRadialMenu.drawShape();
   
-
 }
 
 void mousePressed()
@@ -280,7 +308,7 @@ void mousePressed()
           if (i == 1)
           {
             closeMenu();
-            flexCursor.mode = 1;
+            colorWheel.isActive = true;
             isOverlappingMenuItem = false;
             isOverlappingMainMenu = false;
           }
@@ -303,6 +331,13 @@ void mousePressed()
         }
       }
     }
+  }
+  
+  //if mouse clicked while colour select open
+  else if(activeMenuItem == 1 && isOverlappingCheck)
+  {
+    colorWheel.isActive = false;
+    
   }
   
   //if clicking main menu
@@ -358,7 +393,10 @@ void drawing()
 
 void sampling()
 {
-  strokeColor = color(get(mouseX, mouseY));
+  if(!isOverlappingCheck && colorWheel.isActive)
+  {
+    strokeColor = color(get(mouseX, mouseY));
+  }
 }
 
 

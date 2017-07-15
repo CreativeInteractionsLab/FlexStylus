@@ -55,6 +55,8 @@ colorWheel colorWheel;
 float defaultCWSize;
 float defaultCWCheckSize;
 boolean isOverlappingCheck;
+int checkTimer;
+boolean drawColorWheel;
 
 //erasing
 color eraserColor;
@@ -64,8 +66,8 @@ void setup()
   size(1024,1024);
   buffer = createGraphics(1024,1024);
   
-  //String portName = Serial.list()[portNum];
-  //myPort = new Serial(this, portName, 9600);
+  String portName = Serial.list()[portNum];
+  myPort = new Serial(this, portName, 9600);
   
   //cursor setup
   xpos = width/2;
@@ -125,6 +127,7 @@ void setup()
   defaultCWSize = 350;
   defaultCWCheckSize = 50;
   isOverlappingCheck = false;
+  drawColorWheel = false;
   
   //eraser setup
   eraserColor = color(0,0);
@@ -140,18 +143,27 @@ void draw()
   //change cursor
   flexCursor.mode = activeMenuItem;
   
-  //color wheel transitions
-  if (activeMenuItem == 1)
+  //color wheel draw
+  if(drawColorWheel)
   {
-    if(colorWheel.isActive)
+    if (activeMenuItem == 1)
     {
-      colorWheel.update(350,350, defaultCWCheckSize, defaultCWCheckSize);
-      colorWheel.drawShape();
-    }
-    else if(!colorWheel.isActive)
-    {
-      colorWheel.update(0,0, 0, 0);
-      colorWheel.drawShape();
+      if(colorWheel.isActive)
+      {
+        colorWheel.update(350,350, defaultCWCheckSize, defaultCWCheckSize);
+        colorWheel.drawShape();
+      }
+      else if(!colorWheel.isActive)
+      {
+        colorWheel.update(0,0, 0, 0);
+        colorWheel.drawShape();
+        
+        if(millis() >= checkTimer+150)
+        {
+          drawColorWheel = false;
+          activeMenuItem = 0;
+        }
+      }
     }
   }
   
@@ -308,6 +320,7 @@ void mousePressed()
           if (i == 1)
           {
             closeMenu();
+            drawColorWheel = true;
             colorWheel.isActive = true;
             isOverlappingMenuItem = false;
             isOverlappingMainMenu = false;
@@ -337,7 +350,7 @@ void mousePressed()
   else if(activeMenuItem == 1 && isOverlappingCheck)
   {
     colorWheel.isActive = false;
-    
+    checkTimer = millis();
   }
   
   //if clicking main menu
